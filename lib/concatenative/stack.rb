@@ -99,7 +99,7 @@ module Concatenative
 		def _i
 			program = pop
 			raise ArgumentError, "I: first element is not a quoted program." unless program.is_a? Array
-			from_a dup.concat(program).execute
+			from_a concat_execute(program)
 		end
 
 		def _ifte
@@ -110,8 +110,8 @@ module Concatenative
 			raise ArgumentError, "IFTE: first element is not a quoted program." unless _if.is_a? Array
 			raise ArgumentError, "IFTE: second element is not a quoted program." unless _then.is_a? Array
 			raise ArgumentError, "IFTE: third element is not a quoted program." unless _else.is_a? Array
-			condition = _if.dup.prepend(arg).execute
-			concat (condition.first) ? _then.dup.prepend(arg).execute : _else.dup.prepend(arg).execute
+			condition = _if.prepend_execute(arg)
+			concat (condition.first) ? _then.prepend_execute(arg) : _else.prepend_execute(arg)
 		end
 
 		def _map
@@ -119,7 +119,7 @@ module Concatenative
 			list = pop
 			raise ArgumentError, "MAP: first element is not a quoted program." unless program.is_a? Array
 			raise ArgumentError, "MAP: second element is not an array." unless list.is_a? Array
-			push list.map {|e| program.dup.prepend(e).execute.first }
+			push list.map {|e| program.prepend_execute(e).first }
 		end
 	
 		def _step
@@ -127,9 +127,56 @@ module Concatenative
 			list = pop
 			raise ArgumentError, "STEP: first element is not a quoted program." unless program.is_a? Array
 			raise ArgumentError, "STEP: second element is not an array." unless list.is_a? Array
-			list.map {|e| push program.dup.prepend(e).execute.first }
+			list.map {|e| push program.prepend_execute(e).first }
 		end
-	
+
+		def _linrec
+			rec2 = pop
+		 	rec1 = pop
+			_then = pop
+			_if = pop
+			arg = pop
+			if _if.prepend_execute(arg).first then
+				concat _then.prepend_execute(arg)
+			else
+				concat [*rec1.prepend_execute(arg), _if, _then, rec1, rec2]
+				_linrec
+				push rec2
+				_i
+			end
+		end
+
+		def _primrec
+			rec2 = pop
+			_then = pop
+			_then = [:POP, _then.execute.first]
+			arg = pop
+			# Guessing IF
+			case 
+			when arg.respond_to?(:blank?) then
+				_if = [:blank?]
+			when arg.respond_to?(:empty?) then
+				_if = [:empty]
+			when arg.is_a?(Numeric) then
+				_if = [0, :==]
+			when arg.is_a?(String) then
+				_if = ["", :==]
+			else
+				raise ArgumentError, "PRIMREC: Unable to create IF element for #{arg} (#{arg.class})"
+			end
+			# Guessing REC1
+			case
+			when arg.respond_to?(:pred) then
+				rec1 = [:DUP, :pred]
+			when arg.respond_to?(:length) && arg.respond_to?(:slice) then
+				rec1 = [0, (arg.length-2), :slice|2]
+			else
+				raise ArgumentError, "PRIMREC: Unable to create REC1 element for #{arg} (#{arg.class})"
+			end
+			concat [arg, _if, _then, rec1, rec2]
+			_linrec
+		end
+			
 	end
 end
 

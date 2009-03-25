@@ -88,4 +88,16 @@ describe Concatenative::Stack do
 	it "should expose the STEP combinator" do
 		[[1,2,3,4], [:DUP, :*], :STEP].execute.should == [1,4,9,16]
 	end
+
+require 'benchmark'
+
+	it "should expose the LINREC combinator" do
+		[5, [0, :==], [:succ], [:DUP, :pred], [:*], :LINREC].execute.should == [120]
+		[5, [0, :==], [:succ], [:DUP, :pred], [:*], :LINREC].execute.should == [120]
+	end
+
+	it "should expose the PRIMREC combinator" do
+		[5, [1], [:*], :PRIMREC].execute.should == [120]
+	end
+
 end

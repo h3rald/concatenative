@@ -10,6 +10,15 @@ class Array
 		insert 0, element
 	end
 
+	def prepend_execute(arg)
+		dup.insert(0,arg).execute
+	end
+
+	def concat_execute(arg)
+		dup.concat(arg).execute
+	end
+
+
 end
 
 class Symbol

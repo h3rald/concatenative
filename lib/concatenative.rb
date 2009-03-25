@@ -12,8 +12,7 @@ require libdir+'definitions'
 module Concatenative
 
 	ARITIES = {}
-	MAX_ARGS = 5
-	DEBUG = true # for tests only
+	DEBUG = false # for tests only
 	
 	def set_arity(meth, arity)
 		ARITIES[meth] = arity
@@ -27,7 +26,7 @@ module Concatenative
 			stack.debug
 			if item.is_a?(Symbol)||item.is_a?(Concatenative::Message) then
 				if item.is_a?(Symbol) && item.definition then
-					stack.from_a stack.dup.concat(item.definition).execute
+					stack.from_a stack.concat_execute(item.definition)
 				else
 					call_function(item, stack)
 				end
