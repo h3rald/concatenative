@@ -7,9 +7,9 @@ require dir+"concatenative"
 describe Concatenative do
 
 	it "should define SWONS" do
-		[[2], 1, :SWAP, :CONS].execute.should == [[1,2]]
+		[[2], 1, :SWAP, :CONS].execute.should == [1,2]
 		[[2],1, :SWONS].execute.should == [[2],1, :SWAP, :CONS].execute
-		[[2],1, :SWONS].execute.should ==  [[1,2]]
+		[[2],1, :SWONS].execute.should ==  [1,2]
 	end
 
 	it "should define POPD" do
