@@ -22,7 +22,7 @@ puts "=====> Factorial of #{n}"
 puts "======================================================================"
 Benchmark.bmbm(20) do |x|
   x.report("Standard Ruby Code:") { factorial n }
-	x.report("Concatenative (times):") { concatenate(5, 1, 1, :ROLLDOWN, [:DUP, [:*], :DIP, :succ], :TIMES, :POP) }
+	x.report("Concatenative (times):") { concatenate(n, 1, 1, :ROLLDOWN, [:DUP, [:*], :DIP, :succ], :TIMES, :POP) }
   x.report("Concatenative (linrec):") { concatenate(n, [0, :==], [1, :+], [:DUP, 1, :-], [:*], :LINREC) }
   x.report("Concatenative (primrec):") { concatenate(n, [1], [:*], :PRIMREC) }
 end
