@@ -66,20 +66,33 @@ describe Concatenative::System do
 		[5, :FACTORIAL].execute.should == 120
 	end
 
-	it "should expose the MAP combinator" do
+	it "should expose MAP" do
 		[[1,2,3,4], [:DUP, :*], :MAP, 1].execute.should == [[1,4,9,16], 1]
 	end
 
-	it "should expose the STEP combinator" do
+	it "should expose STEP" do
 		[[1,2,3,4], [:DUP, :*], :STEP, 1].execute.should == [1,4,9,16, 1]
 	end
 
-	it "should expose the LINREC combinator" do
+	it "should expose LINREC" do
+		# factorial
 		[5, [0, :==], [1, :+], [:DUP, 1, :-], [:*], :LINREC].execute.should == 120
 	end
 
-	it "should expose the PRIMREC combinator" do
+	it "should expose PRIMREC" do
+		# factorial
 		[5, [1], [:*], :PRIMREC].execute.should == 120
+	end
+
+	it "should expose TIMES" do
+		[4, [5, 2, :*], :TIMES].execute.should == [10, 10, 10, 10]	
+		# factorial
+		[5, 1, 1, :ROLLDOWN, [:DUP, [:*], :DIP, :succ], :TIMES, :POP].execute.should == 120
+		x1,x2 = 0, 1 
+		res = []
+		0.upto(50){ res << x1; x1+=x2; x1,x2= x2,x1} 
+		# Fibonacci number
+		[50, 0, 1, :ROLLDOWN, [:DUP, [:+], :DIP, :SWAP], :TIMES, :POP].execute.should == res[res.length-1]
 	end
 
 end

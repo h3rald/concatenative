@@ -188,6 +188,10 @@ module Concatenative
 			_then = _pop
 			_if = _pop
 			arg = _pop
+			raise ArgumentError, "LINREC: first element is not an Array." unless _if.is_a? Array
+			raise ArgumentError, "LINREC: second element is not an Array." unless _then.is_a? Array
+			raise ArgumentError, "LINREC: third element is not an Array." unless rec1.is_a? Array
+			raise ArgumentError, "LINREC: fourth element is not an Array." unless rec2.is_a? Array
 			prepend_execute(_if, arg)
 			condition = _pop
 			if condition then
@@ -229,6 +233,13 @@ module Concatenative
 			end
 			STACK.concat [arg, _if, _then, rec1, rec2]
 			_linrec
+		end
+
+		def self._times
+			program = _pop
+			n = _pop
+			raise ArgumentError, "TIMEs: second element is not an Array." unless program.is_a? Array
+			n.times { _push program.dup; _i }
 		end
 		
 	end
