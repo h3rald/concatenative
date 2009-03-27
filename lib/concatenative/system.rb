@@ -2,23 +2,20 @@
 
 module Concatenative
 
+	# The System module includes the STACK constant, methods to interpret items pushed on 
+	# the stack and the implementations of all concatenative combinators and operators. 
 	module System
 		
 		STACK = []
 
-		def self.debug
-			if Concatenative::DEBUG then
-				print "STACK: "
-				pp STACK
-			end
-		end
-
+		# Executes an array as a concatenative program (clears the stack first).
 		def self.execute(array)
 			STACK.clear
-			array.each { |e| process e; debug }
+			array.each { |e| process e }
 			(STACK.length == 1) ? STACK[0] : STACK
 		end
 
+		# Processes an item (without clearning the stack).
 		def self.process(item)
 			case
 			when !item.is_a?(Symbol) && !item.is_a?(Concatenative::RubyMessage) then
@@ -30,6 +27,7 @@ module Concatenative
 			end
 		end
 
+		# Calls a function (defined using Symbol#define) or a Ruby method identified by item (a Symbol or RubyMessage).
 		def self.call_function(item)
 			name = "_#{item.to_s.downcase}".to_sym
 			if (item.to_s.upcase == item.to_s) && !ARITIES[item] then
@@ -39,6 +37,8 @@ module Concatenative
 			end
 		end
 
+		# Calls a Ruby method, consuming elements from the stack according to its
+		# explicit or implicit arity.
 		def self.send_message(message)
 			raise EmptyStackError, "Empty stack" if STACK.empty?
 			case
@@ -64,32 +64,47 @@ module Concatenative
 
 		# Operators & Combinators
 
+		# Clears the stack.
 		def self._clear
 			STACK.clear
 		end
 
+		# Pops an item out of the stack.
+		#
+		# A, B => A
 		def self._pop
 			raise EmptyStackError, "Empty stack" if STACK.empty?
 			STACK.pop
 		end
 
+		# Pushes an item on the stack.
+		#
+		# A => A, B
 		def self._push(element)
 			STACK.push element
 		end
 
+		# Prints the top stack item.
 		def self._put
 			puts STACK.last 
 		end
 
+		# Pushes a user-entered string on the stack. 
 		def self._get
 			_push gets
 		end
 
+		# Duplicates the top stack item.
+		#
+		# A => A, A
 		def self._dup
 			raise EmptyStackError, "Empty stack" if STACK.empty?
 			_push STACK.last
 		end
 
+		# Swaps the first two elements on the stack.
+		#
+		# A, B => B, A 
 		def self._swap
 			a = _pop
 			b = _pop
@@ -97,13 +112,19 @@ module Concatenative
 			_push b
 		end
 
+		# Prepends an element to an Array.  
+		#
+		# [A], B => [A, B]
 		def self._cons
 			array = _pop
 			element = _pop
 			raise ArgumentError, "CONS: first element is not an Array." unless array.is_a? Array
-			_push array.prepend(element)
+			_push array.insert(0, element)
 		end
 
+		# Concatenates two arrays.
+		#
+		# [A], [B] => [A, B]
 		def self._cat
 			array1 = _pop
 			array2 = _pop
@@ -112,6 +133,9 @@ module Concatenative
 			_push array2.concat(array1)
 		end
 
+		# Returns the first element of an array.
+		#
+		# [A, B] => A
 		def self._first
 			array = _pop
 			raise ArgumentError, "FIRST: first element is not an Array." unless array.is_a? Array
@@ -119,6 +143,9 @@ module Concatenative
 			_push array.first
 		end
 
+		# Returns everything but the first element of an array.
+		#
+		# [A, B, C] => [B, C]
 		def self._rest
 			array = _pop
 			raise ArgumentError, "REST: first element is not an Array." unless array.is_a? Array
@@ -132,6 +159,9 @@ module Concatenative
 			alias _concat _cat
 		end
 
+		# Saves A, executes P, pushes A back.
+		#
+		# A, [P] => B, A
 		def self._dip
 			program = _pop
 			raise ArgumentError, "DIP: first element is not an Array." unless program.is_a? Array
@@ -140,12 +170,18 @@ module Concatenative
 			_push arg
 		end
 
+		# Executes a quoted program.
+		#
+		# [P] => A
 		def self._i
 			program = _pop
 			raise ArgumentError, "I: first element is not an Array." unless program.is_a? Array
 			program.unquote
 		end
 
+		# Executes THEN if IF is true, otherwise executes ELSE.
+		#
+		# A, [IF], [THEN], [ELSE] => B
 		def self._ifte
 			_else = _pop
 			_then = _pop
@@ -164,10 +200,16 @@ module Concatenative
 			end
 		end
 
+		# Quotes the top stack element.
+		#
+		# A => [A]
 		def self._unit
 			_push [_pop]
 		end
 
+		# Executes P for each element of A, pushes an array containing the results on the stack.
+		# 
+		# [A], [P] => [B]
 		def self._map
 			program = _pop
 			list = _pop
@@ -182,6 +224,9 @@ module Concatenative
 			end
 		end
 
+		# Executes P for each element of A, pushes the results on the stack.
+		# 
+		# [A], [P] => B
 		def self._step
 			program = _pop
 			list = _pop
@@ -193,6 +238,9 @@ module Concatenative
 			end
 		end
 
+		# If IF is true, executes THEN. Otherwise, executes REC1, recurses and then executes REC2.
+		#
+		# A, [IF], [THEN], [REC1], [REC2] => B
 		def self._linrec
 			rec2 = _pop
 			rec1 = _pop
@@ -216,6 +264,12 @@ module Concatenative
 			end
 		end
 
+    #	Same as _linrec, but it is only necessary to specify THEN and REC2.
+		#
+		#	* REC1 = a program to reduce A to its zero value (0, [], "").
+		#	* IF = a condition to verify if A is its zero value (0, [], "") or not.
+		#
+		# A, [THEN], [REC2] => B 
 		def self._primrec
 			rec2 = _pop
 			_then = [:POP, _pop, :I]
@@ -246,6 +300,9 @@ module Concatenative
 			_linrec
 		end
 
+		# Executes P N times.
+		#
+		# N [P] => A
 		def self._times
 			program = _pop
 			n = _pop
@@ -253,6 +310,9 @@ module Concatenative
 			n.times { program.clone.unquote }
 		end
 
+		# While COND is true, executes P
+		#
+		# [P] [COND] => A
 		def self._while
 			program = _pop
 			cond = _pop

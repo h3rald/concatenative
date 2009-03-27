@@ -1,0 +1,50 @@
+= Concatenative
+
+Concatenative implements a stack-based DSL to use concatenative programming in Ruby. Because of its high-level implementation, it is not nearly as fast as ordinary Ruby code, but it can be used to learn the basics of concatenative programming without having to learn another programming language.
+
+Concatenative's syntax is still valid Ruby code, but resambles a concatenative programming language like Joy (http://www.latrobe.edu.au/philosophy/phimvt/joy.html).
+
+== Installation
+
+The simplest method to install Concatenative is to install the gem:
+
+	gem install concatenative
+
+== Usage
+
+Initialization:
+	
+	require 'concatentive'
+
+Execute a Concatenative program:
+
+	concatenate(
+		10, 
+		[0, :==], 
+		[1, :+], 
+		[:DUP, 1, :-], 
+		[:*], 
+		:LINREC
+	)
+
+The program above returns the factorial of 10, computed using the linrec combinator. It is also possible to execute arrays directly and define concatenative programs as symbols (tey must be all uppercase).
+
+
+		:FACTORIAL.define [0, :==], [:POP, 1], [:DUP, 1, :- , :FACTORIAL, :*], :IFTE
+		[5, :FACTORIAL].execute
+
+The program above calculates the factorial of 5, using explicit recursion. 
+
+You can use all Ruby methods in Concatenative programs as well, making sure that the right number of arguments (and the method's receiver) are retrieved from the stack correctly. For this to work, Concatenative must know the arity of the method in advance, so the following rules are applied:
+
+* All operators have an arity of 1
+* All other method have an arity of 0
+* If a method has a different arity, you must specify it explicitly using the pipe (|) operator.
+
+Example:
+
+	concatenate(
+		"Goodbye, World!", /Goodbye/, "Hello", :sub|2
+	)
+
+The program above is equivalent to <tt>"Goodbye, World!".sub(/Goodbye/, "Hello")</tt>.

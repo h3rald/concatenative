@@ -1,5 +1,6 @@
 #!usr/bin/env ruby
 
+# Some definitions of common concatenative functions
 :REP.define :I, :DUP
 :SWONS.define :SWAP, :CONS
 :POPD.define [:POP], :DIP

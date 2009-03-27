@@ -1,0 +1,4 @@
+== Version 0.1.0
+
+First preview release of Concatenative, implementing all the most basic operators and
+combinators.
