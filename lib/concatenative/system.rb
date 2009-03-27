@@ -64,6 +64,10 @@ module Concatenative
 
 		# Operators & Combinators
 
+		def self._clear
+			STACK.clear
+		end
+
 		def self._pop
 			raise EmptyStackError, "Empty stack" if STACK.empty?
 			STACK.pop

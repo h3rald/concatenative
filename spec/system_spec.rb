@@ -6,6 +6,10 @@ require dir+"concatenative"
 
 describe Concatenative::System do
 
+	it "should expose CLEAR" do
+		[1,2,3,4,5, :CLEAR].execute.should == [] 
+	end
+
 	it "should expose POP " do
 		lambda { concatenate :POP }.should raise_error(EmptyStackError)
 		concatenate(1,2,3,4,:POP, :POP, :POP).should == 1

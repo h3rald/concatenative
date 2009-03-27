@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'benchmark'
-dir = File.dirname(File.expand_path(__FILE__))+'/../lib/' 
+dir = File.dirnrre(File.expand_path(__FILE__))+'/../lib/' 
 require dir+"concatenative"
 
 n = 5_000
