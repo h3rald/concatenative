@@ -2,9 +2,9 @@
 
 module Concatenative
 
-	STACK = []
-
 	module System
+		
+		STACK = []
 
 		def self.debug
 			if Concatenative::DEBUG then
@@ -16,30 +16,24 @@ module Concatenative
 		def self.execute(array)
 			STACK.clear
 			array.each { |e| process e; debug }
-			return *STACK
-		end
-
-			def self.prepend_execute(array, element)
-			_push array.dup.prepend(element)
-			_i
+			(STACK.length == 1) ? STACK[0] : STACK
 		end
 
 		def self.process(item)
-			if item.is_a?(Symbol)||item.is_a?(Concatenative::Message) then
-				if item.is_a?(Symbol) && item.definition then
-					item.definition.each {|e| process e}
-				else
-					call_function item
-				end
-			else
+			case
+			when !item.is_a?(Symbol) && !item.is_a?(Concatenative::RubyMessage) then
 				_push item
+			when item.is_a?(Symbol) && item.definition then
+				item.definition.each {|e| process e}
+			else
+				call_function item
 			end
 		end
 
 		def self.call_function(item)
 			name = "_#{item.to_s.downcase}".to_sym
 			if (item.to_s.upcase == item.to_s) && !ARITIES[item] then
-				respond_to?(name) ?	send(name) : raise(ConcatenativeError, "Unknown redex: #{item}")
+				respond_to?(name) ?	send(name) : raise(RuntimeError, "Unknown function: #{item}")
 			else
 				_push send_message(item)
 			end
@@ -48,7 +42,7 @@ module Concatenative
 		def self.send_message(message)
 			raise EmptyStackError, "Empty stack" if STACK.empty?
 			case
-			when message.is_a?(Concatenative::Message) then
+			when message.is_a?(Concatenative::RubyMessage) then
 				n = message.arity
 				method = message.name
 			when message.is_a?(Symbol) then
@@ -63,7 +57,8 @@ module Concatenative
 			begin
 				(args.length == 0)	? receiver.send(method) :	receiver.send(method, *args)
 			rescue Exception => e
-				raise RuntimeError, "Error when calling: #{receiver}##{method}(#{args.join(', ')}) [#{receiver.class}##{method}]"
+				raise RuntimeError, 
+					"Error when calling: #{receiver}##{method}(#{args.join(', ')}) [#{receiver.class}##{method}]"
 			end
 		end
 
@@ -137,28 +132,32 @@ module Concatenative
 			program = _pop
 			raise ArgumentError, "DIP: first element is not an Array." unless program.is_a? Array
 			arg = _pop
-			_push program
-			_i
+			program.unquote
 			_push arg
 		end
 
 		def self._i
 			program = _pop
 			raise ArgumentError, "I: first element is not an Array." unless program.is_a? Array
-			program.each { |e| process e }
+			program.unquote
 		end
 
 		def self._ifte
 			_else = _pop
 			_then = _pop
 			_if = _pop
-			arg = _pop
 			raise ArgumentError, "IFTE: first element is not an Array." unless _if.is_a? Array
 			raise ArgumentError, "IFTE: second element is not an Array." unless _then.is_a? Array
 			raise ArgumentError, "IFTE: third element is not an Array." unless _else.is_a? Array
-			prepend_execute _if, arg
+			snapshot = STACK.clone
+			_if.unquote
 			condition = _pop
-			(condition) ? prepend_execute(_then, arg) : prepend_execute(_else, arg)
+			STACK.replace snapshot
+			if condition then
+				_then.unquote
+			else
+				_else.unquote
+			end
 		end
 
 		def self._unit
@@ -171,7 +170,12 @@ module Concatenative
 			raise ArgumentError, "MAP: first element is not an Array." unless program.is_a? Array
 			raise ArgumentError, "MAP: second element is not an array." unless list.is_a? Array
 			_push []
-			list.map {|e| prepend_execute(program, e).first; _unit; _cat }
+			list.map do |e| 
+				_push e
+				program.unquote
+				_unit
+				_cat
+			end
 		end
 
 		def self._step
@@ -179,7 +183,10 @@ module Concatenative
 			list = _pop
 			raise ArgumentError, "STEP: first element is not an Array." unless program.is_a? Array
 			raise ArgumentError, "STEP: second element is not an array." unless list.is_a? Array
-			list.map {|e| prepend_execute(program, e).first }
+			list.map do |e| 
+				_push e
+				program.unquote
+			end
 		end
 
 		def self._linrec
@@ -187,21 +194,21 @@ module Concatenative
 			rec1 = _pop
 			_then = _pop
 			_if = _pop
-			arg = _pop
 			raise ArgumentError, "LINREC: first element is not an Array." unless _if.is_a? Array
 			raise ArgumentError, "LINREC: second element is not an Array." unless _then.is_a? Array
 			raise ArgumentError, "LINREC: third element is not an Array." unless rec1.is_a? Array
 			raise ArgumentError, "LINREC: fourth element is not an Array." unless rec2.is_a? Array
-			prepend_execute(_if, arg)
+			snapshot = STACK.clone
+			_if.unquote
 			condition = _pop
+			STACK.replace snapshot
 			if condition then
-				prepend_execute(_then, arg)
+				_then.unquote
 			else
-				prepend_execute(rec1, arg)
+				rec1.unquote
 				STACK.concat [_if, _then, rec1, rec2]
 				_linrec
-				_push rec2
-				_i
+				rec2.unquote
 			end
 		end
 
@@ -239,7 +246,23 @@ module Concatenative
 			program = _pop
 			n = _pop
 			raise ArgumentError, "TIMEs: second element is not an Array." unless program.is_a? Array
-			n.times { _push program.dup; _i }
+			n.times { program.clone.unquote }
+		end
+
+		def self._while
+			program = _pop
+			cond = _pop
+			raise ArgumentError, "WHILE: first element is not an Array." unless cond.is_a? Array
+			raise ArgumentError, "WHILE: second element is not an Array." unless program.is_a? Array
+			snapshot = STACK.clone
+			cond.unquote
+			res = _pop
+			STACK.replace snapshot
+			if res then 
+				program.unquote
+				STACK.concat [cond, program]
+				_while
+			end
 		end
 		
 	end

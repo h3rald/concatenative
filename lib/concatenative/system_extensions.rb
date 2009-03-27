@@ -9,6 +9,10 @@ class Array
 	def prepend(element)
 		insert 0, element
 	end
+
+	def unquote
+		each { |e| Concatenative::System.process e }
+	end
 end
 
 class Symbol
@@ -27,7 +31,7 @@ class Symbol
 	end
 
 	def |(arity)
-		Concatenative::Message.new self, arity
+		Concatenative::RubyMessage.new self, arity
 	end
 
 end

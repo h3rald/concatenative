@@ -95,4 +95,9 @@ describe Concatenative::System do
 		[50, 0, 1, :ROLLDOWN, [:DUP, [:+], :DIP, :SWAP], :TIMES, :POP].execute.should == res[res.length-1]
 	end
 
+	it "should expose WHILE" do
+		# gcd
+		[40, 25, [0, :>], [:DUP, :ROLLUP, :remainder|1], :WHILE, :POP].execute.should == 5
+	end
+
 end

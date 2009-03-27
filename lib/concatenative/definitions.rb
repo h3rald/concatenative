@@ -1,6 +1,5 @@
 #!usr/bin/env ruby
 
-:UNIT.define [], :CONS
 :REP.define :I, :DUP
 :SWONS.define :SWAP, :CONS
 :POPD.define [:POP], :DIP
@@ -10,4 +9,3 @@
 :ROLLUP.define :SWAP, [:SWAP], :DIP
 :ROLLDOWN.define [:SWAP], :DIP, :SWAP
 :ROTATE.define :SWAP, [:SWAP], :DIP, :SWAP
-

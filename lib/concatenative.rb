@@ -1,10 +1,8 @@
 require 'pp'
-require 'yaml'
 
 libdir = File.dirname(File.expand_path(__FILE__))+'/concatenative/'
 
 class EmptyStackError < RuntimeError; end
-class ConcatenativeError < RuntimeError; end
 
 require libdir+'system'
 require libdir+'system_extensions'
@@ -13,14 +11,14 @@ require libdir+'definitions'
 module Concatenative
 
 	ARITIES = {}
-	DEBUG = false # for tests only
+	DEBUG = false
 
 	def set_arity(meth, arity)
 		ARITIES[meth] = arity
 	end
 
 
-	class Message
+	class RubyMessage
 		attr_reader :name, :arity
 		def initialize(name, arity)
 			@name = name
