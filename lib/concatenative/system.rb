@@ -8,6 +8,26 @@ module Concatenative
 		
 		STACK = []
 
+		class << self
+			attr_accessor :frozen, :popped, :pushed
+		end
+		
+		@frozen = nil
+		@popped = nil
+		@pushed = nil
+
+		def self.save_stack
+			@frozen = STACK.length
+			@popped = 0
+			@pushed = 0
+		end
+
+		def self.restore_stack
+			diff = STACK.length - @frozen
+			@frozen = nil
+			diff.times { _pop }
+		end	
+
 		# Executes an array as a concatenative program (clears the stack first).
 		def self.execute(array)
 			STACK.clear
@@ -74,7 +94,15 @@ module Concatenative
 		# A, B => A
 		def self._pop
 			raise EmptyStackError, "Empty stack" if STACK.empty?
-			STACK.pop
+			return STACK.pop unless @frozen
+			if @pushed > 0 then
+				@pushed -= 1
+				STACK.pop
+			else
+				raise EmptyStackError, "Empty stack" if @frozen <= 0
+				@popped += 1
+				STACK[@frozen-@popped]
+			end	
 		end
 
 		# Pushes an item on the stack.
@@ -82,6 +110,8 @@ module Concatenative
 		# A => A, B
 		def self._push(element)
 			STACK.push element
+			@pushed += 1 if @frozen
+			element
 		end
 
 		# Prints the top stack item.
@@ -189,10 +219,10 @@ module Concatenative
 			raise ArgumentError, "IFTE: first element is not an Array." unless _if.is_a? Array
 			raise ArgumentError, "IFTE: second element is not an Array." unless _then.is_a? Array
 			raise ArgumentError, "IFTE: third element is not an Array." unless _else.is_a? Array
-			snapshot = STACK.clone
+			save_stack
 			_if.unquote
 			condition = _pop
-			STACK.replace snapshot
+			restore_stack
 			if condition then
 				_then.unquote
 			else
@@ -250,15 +280,15 @@ module Concatenative
 			raise ArgumentError, "LINREC: second element is not an Array." unless _then.is_a? Array
 			raise ArgumentError, "LINREC: third element is not an Array." unless rec1.is_a? Array
 			raise ArgumentError, "LINREC: fourth element is not an Array." unless rec2.is_a? Array
-			snapshot = STACK.clone
+			save_stack
 			_if.unquote
 			condition = _pop
-			STACK.replace snapshot
+			restore_stack
 			if condition then
 				_then.unquote
 			else
 				rec1.unquote
-				STACK.concat [_if, _then, rec1, rec2]
+				[_if, _then, rec1, rec2].each {|e| _push e }
 				_linrec
 				rec2.unquote
 			end
@@ -296,7 +326,7 @@ module Concatenative
 			else
 				raise ArgumentError, "PRIMREC: Unable to create REC1 element for #{arg} (#{arg.class})"
 			end
-			STACK.concat [arg, _if, _then, rec1, rec2]
+			[arg, _if, _then, rec1, rec2].each {|e| _push e }
 			_linrec
 		end
 
@@ -318,13 +348,13 @@ module Concatenative
 			cond = _pop
 			raise ArgumentError, "WHILE: first element is not an Array." unless cond.is_a? Array
 			raise ArgumentError, "WHILE: second element is not an Array." unless program.is_a? Array
-			snapshot = STACK.clone
+			save_stack
 			cond.unquote
 			res = _pop
-			STACK.replace snapshot
+			restore_stack
 			if res then 
 				program.unquote
-				STACK.concat [cond, program]
+				[cond, program].each {|e| _push e }
 				_while
 			end
 		end
