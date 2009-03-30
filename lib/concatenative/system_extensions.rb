@@ -1,5 +1,20 @@
 #!usr/bin/env ruby
 
+module Kernel
+
+	# Execute an array as a concatenative program (clears the STACK first).
+	def concatenate(*program)
+		Concatenative::System.execute program
+	end
+
+	# Specify the arity of a ruby method (regardless of the receiver).
+	def set_arity(meth, arity)
+		Concatenative::ARITIES[meth] = arity
+	end
+
+end
+
+
 # The Array class is extended to allow execution of concatenative programs.
 class Array
 
@@ -7,7 +22,7 @@ class Array
 	def execute
 		Concatenative.concatenate *self
 	end
-	
+
 	# Processes each element of the array as a concatenative expression.
 	def unquote
 		each { |e| Concatenative::System.process e }

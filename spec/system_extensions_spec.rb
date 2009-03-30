@@ -48,7 +48,7 @@ describe Symbol do
 
 	it "should allo arity to be specified" do
 		msg = :gsub|2
-		msg.is_a?(RubyMessage).should == true
+		msg.is_a?(Concatenative::RubyMessage).should == true
 		msg.arity.should == 2
 		msg.name.should == :gsub
 	end
