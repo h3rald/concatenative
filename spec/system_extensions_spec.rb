@@ -10,9 +10,9 @@ describe Array do
 		[2, 3, :+].execute.should == 5
 	end
 
-	it "should be dequotable" do
+	it "should be unquotable" do
 		[2, 3, :*].unquote
-		Concatenative::System::STACK.last.should == 6
+		Concatenative::STACK.last.should == 6
 	end
 
 end
