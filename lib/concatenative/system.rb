@@ -8,7 +8,6 @@ module Concatenative
 	# the stack and the implementations of all concatenative combinators and operators. 
 	module System
 
-		extend Operators
 		extend Combinators
 
 		class << self
@@ -19,12 +18,21 @@ module Concatenative
 		@popped = nil
 		@pushed = nil
 
+		# Pushes an item on the stack.
+		def self._push(element)
+			STACK.push element
+			@pushed += 1 if @frozen
+			element
+		end
+
+		# Saves the stack state
 		def self.save_stack
 			@frozen = STACK.length
 			@popped = 0
 			@pushed = 0
 		end
 
+		# Restored the previously saved stack state
 		def self.restore_stack
 			diff = STACK.length - @frozen
 			@frozen = nil

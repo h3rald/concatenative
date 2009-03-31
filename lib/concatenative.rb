@@ -4,7 +4,6 @@ libdir = File.dirname(File.expand_path(__FILE__))+'/concatenative/'
 
 class EmptyStackError < RuntimeError; end
 
-require libdir+'operators'
 require libdir+'combinators'
 require libdir+'system'
 require libdir+'system_extensions'

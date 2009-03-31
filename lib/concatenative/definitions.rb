@@ -3,6 +3,7 @@
 # Some definitions of common concatenative functions
 :REP.define :I, :DUP
 :SWONS.define :SWAP, :CONS
+:UNSWONS.define :UNCONS, :SWAP
 :POPD.define [:POP], :DIP
 :DUPD.define [:DUP], :DIP
 :SWAPD.define [:SWAP], :DIP
