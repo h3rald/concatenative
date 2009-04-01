@@ -14,10 +14,6 @@ describe Concatenative::System do
 		[[1,2,3],'|',:join|1].execute.should == "1|2|3"
 	end
 
-	it "should process concatenative definitions" do
-		[2, 3, [4], :SIP].execute.should == [2, 3, [4], :DUPD, :SWAP, [:I], :DIP].execute
-	end
-
 	it "should process operators" do
 		[2, 2, :DUP].execute.should == [2, 2, 2]
 	end

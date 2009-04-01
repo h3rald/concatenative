@@ -79,14 +79,6 @@ describe Concatenative::Combinators do
 	it "should expose SWAPD" do
 		[1,2,3, :SWAPD].execute.should == [2,1,3]
 	end
-
-	it "should expose SIP" do
-		[[1,2],[3,4],:SIP].execute.should == [[1,2],3,4,[1,2]]
-	end
-
-	it "should expose REP" do
-		[[2,3, :*], :REP, 2].execute.should == [6,6,2]
-	end
 	
 	it "should expose ROLLUP, ROLLDOWN and ROTATE" do
 		a = [3,2,1]

@@ -7,7 +7,6 @@ class EmptyStackError < RuntimeError; end
 require libdir+'combinators'
 require libdir+'system'
 require libdir+'system_extensions'
-require libdir+'definitions'
 
 # The Concatenative module (included automatically when required) defines
 # some constants, the <tt>concatenate</tt> method and the RubyMessage class.
