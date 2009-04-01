@@ -6,51 +6,52 @@ module Concatenative
 
 		# Clears the stack.
 		def _clear
-			STACK.clear
+			DATA_STACK.clear
 		end
 
 		# Pops an item out of the stack.
 		#
 		# A, B => A
 		def _pop
-			raise EmptyStackError, "Empty stack" if STACK.empty?
-			return STACK.pop unless @frozen
+			raise EmptyStackError, "Empty stack" if DATA_STACK.empty?
+			return DATA_STACK.pop unless @frozen
 			if @pushed > 0 then
 				@pushed -= 1
-				STACK.pop
+				DATA_STACK.pop
 			else
 				raise EmptyStackError, "Empty stack" if @frozen <= 0
 				@popped += 1
-				STACK[@frozen-@popped]
+				DATA_STACK[@frozen-@popped]
 			end	
 		end
 
 		# Prints the top stack item.
 		def _put
-			puts STACK.last 
+			puts DATA_STACK.last 
 		end
 
 		# Pushes a user-entered string on the stack. 
 		def _get
-			_push gets
+			push gets
 		end
 
 		# Duplicates the top stack item.
 		#
 		# A => A, A
 		def _dup
-			raise EmptyStackError, "Empty stack" if STACK.empty?
-			_push STACK.last
+			raise EmptyStackError, "Empty stack" if DATA_STACK.empty?
+			push DATA_STACK.last
 		end
 
 		# Swaps the first two elements on the stack.
 		#
 		# A, B => B, A 
 		def _swap
+			
 			a = _pop
 			b = _pop
-			_push a
-			_push b
+			push a
+			push b
 		end
 
 		# Prepends an element to an Array.  
@@ -60,7 +61,12 @@ module Concatenative
 			array = _pop
 			element = _pop
 			raise ArgumentError, "CONS: first element is not an Array." unless array.is_a? Array
-			_push array.insert(0, element)
+			push array.insert(0, element)
+		end
+
+		def _swons
+			_swap
+			_cons
 		end
 
 		# Removes the first element of an array and puts it on the stack, along with the
@@ -70,8 +76,13 @@ module Concatenative
 		def _uncons
 			array = _pop
 			raise ArgumentError, "UNCONS: first element is not an Array." unless array.is_a? Array
-			_push array.first
-			_push array.drop 1
+			push array.first
+			push array.drop 1
+		end
+
+		def _unswons
+			_uncons
+			_swap
 		end
 
 		# Concatenates two arrays.
@@ -82,7 +93,7 @@ module Concatenative
 			array2 = _pop
 			raise ArgumentError, "CAT: first element is not an Array." unless array1.is_a? Array
 			raise ArgumentError, "CAT: first element is not an Array." unless array2.is_a? Array
-			_push array2.concat(array1)
+			push array2.concat(array1)
 		end
 
 		# Returns the first element of an array.
@@ -92,7 +103,7 @@ module Concatenative
 			array = _pop
 			raise ArgumentError, "FIRST: first element is not an Array." unless array.is_a? Array
 			raise ArgumentError, "FIRST: empty array." if array.length == 0
-			_push array.first
+			push array.first
 		end
 
 		# Returns everything but the first element of an array.
@@ -103,30 +114,105 @@ module Concatenative
 			raise ArgumentError, "REST: first element is not an Array." unless array.is_a? Array
 			raise ArgumentError, "REST: empty array." if array.length == 0
 			array.delete_at 0
-			_push array
+			push array
 		end
 
+		alias _drop _pop
 		alias _zap _pop
 		alias _concat _cat
 
-		# Saves A, executes P, pushes A back.
+		# Saves A, executes P, restores A.
 		#
-		# A, [P] => B, A
+		# A, [P] => A
 		def _dip
 			program = _pop
 			raise ArgumentError, "DIP: first element is not an Array." unless program.is_a? Array
-			arg = _pop
+			save
 			program.unquote
-			_push arg
+			restore
+		end
+
+		# Saves A and B, executes P, restores A and B.
+		#
+		# A, B, [P] => A, B
+		def _2dip
+			program = _pop
+			raise ArgumentError, "2DIP: first element is not an Array." unless program.is_a? Array
+			save
+			save
+			program.unquote
+			restore
+			restore
+		end
+
+		# Saves A, B and C, executes P, restores A, B and C.
+		#
+		# A, B, C, [P] => A, B, C
+		def _3dip
+			program = _pop
+			raise ArgumentError, "2DIP: first element is not an Array." unless program.is_a? Array
+			save
+			save
+			save
+			program.unquote
+			restore
+			restore
+			restore
+		end
+
+		def _popd
+			push [:POP]
+			_dip
+		end
+
+		def _dupd
+			push [:DUP]
+			_dip
+		end
+
+		def _swapd
+			push [:SWAP]
+			_dip
+		end
+
+		def _sip
+			_dupd
+			_swap
+			push [:I]
+			_dip
+		end
+
+		def _rollup
+			_swap
+			push [:SWAP]
+			_dip
+		end
+		
+		def _rolldown
+			push [:SWAP]
+			_dip
+			_swap
+		end
+
+		def _rotate
+			_swap
+			push [:SWAP]
+			_dip
+			_swap
 		end
 
 		# Executes a quoted program.
 		#
-		# [P] => A
+		# [P] => 
 		def _i
 			program = _pop
 			raise ArgumentError, "I: first element is not an Array." unless program.is_a? Array
 			program.unquote
+		end
+
+		def _rep
+			_i
+			_dup
 		end
 
 		# Executes THEN if IF is true, otherwise executes ELSE.
@@ -154,7 +240,7 @@ module Concatenative
 		#
 		# A => [A]
 		def _unit
-			_push [_pop]
+			push [_pop]
 		end
 
 		# Executes P for each element of A, pushes an array containing the results on the stack.
@@ -165,9 +251,9 @@ module Concatenative
 			list = _pop
 			raise ArgumentError, "MAP: first element is not an Array." unless program.is_a? Array
 			raise ArgumentError, "MAP: second element is not an array." unless list.is_a? Array
-			_push []
+			push []
 			list.map do |e| 
-				_push e
+				push e
 				program.unquote
 				_unit
 				_cat
@@ -183,7 +269,7 @@ module Concatenative
 			raise ArgumentError, "STEP: first element is not an Array." unless program.is_a? Array
 			raise ArgumentError, "STEP: second element is not an array." unless list.is_a? Array
 			list.map do |e| 
-				_push e
+				push e
 				program.unquote
 			end
 		end
@@ -208,7 +294,7 @@ module Concatenative
 				_then.unquote
 			else
 				rec1.unquote
-				[_if, _then, rec1, rec2].each {|e| _push e }
+				[_if, _then, rec1, rec2].each {|e| push e }
 				_linrec
 				rec2.unquote
 			end
@@ -246,7 +332,7 @@ module Concatenative
 			else
 				raise ArgumentError, "PRIMREC: Unable to create REC1 element for #{arg} (#{arg.class})"
 			end
-			[arg, _if, _then, rec1, rec2].each {|e| _push e }
+			[arg, _if, _then, rec1, rec2].each {|e| push e }
 			_linrec
 		end
 
@@ -274,7 +360,7 @@ module Concatenative
 			restore_stack
 			if res then 
 				program.unquote
-				[cond, program].each {|e| _push e }
+				[cond, program].each {|e| push e }
 				_while
 			end
 		end
@@ -290,13 +376,13 @@ module Concatenative
 			yes, no = [], []
 			array.each do |e|
 				save_stack
-				_push e
+				push e
 				cond.dup.unquote
 				_pop ? yes << e : no << e
 				restore_stack
 			end
-			_push yes
-			_push no
+			push yes
+			push no
 		end
 		
 		# If IF is true, executes THEN. Otherwise, executes REC1 (which must return two elements),
@@ -322,9 +408,9 @@ module Concatenative
 				rec1.unquote
 				a = _pop
 				b = _pop
-				[b, _if, _then, rec1, rec2].each {|e| _push e }
+				[b, _if, _then, rec1, rec2].each {|e| push e }
 				_binrec
-				[a, _if, _then, rec1, rec2].each {|e| _push e }
+				[a, _if, _then, rec1, rec2].each {|e| push e }
 				_binrec
 				rec2.unquote
 			end

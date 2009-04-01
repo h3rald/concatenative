@@ -2,9 +2,10 @@
 
 module Concatenative
 
-	STACK = []
+	DATA_STACK = []
+	RETAIN_STACK = []
 
-	# The System module includes the STACK constant, methods to interpret items pushed on 
+	# The System module includes the DATA_STACK constant, methods to interpret items pushed on 
 	# the stack and the implementations of all concatenative combinators and operators. 
 	module System
 
@@ -19,38 +20,50 @@ module Concatenative
 		@pushed = nil
 
 		# Pushes an item on the stack.
-		def self._push(element)
-			STACK.push element
+		def self.push(element)
+			DATA_STACK.push element
 			@pushed += 1 if @frozen
 			element
 		end
 
+		def self.save
+			item = DATA_STACK.pop
+			RETAIN_STACK.push item
+		 	item	
+		end
+
+		def self.restore
+			item = RETAIN_STACK.pop
+			DATA_STACK.push item
+			item
+		end
+
 		# Saves the stack state
 		def self.save_stack
-			@frozen = STACK.length
+			@frozen = DATA_STACK.length
 			@popped = 0
 			@pushed = 0
 		end
 
 		# Restored the previously saved stack state
 		def self.restore_stack
-			diff = STACK.length - @frozen
+			diff = DATA_STACK.length - @frozen
 			@frozen = nil
 			diff.times { _pop }
 		end	
 
 		# Executes an array as a concatenative program (clears the stack first).
 		def self.execute(array)
-			STACK.clear
+			DATA_STACK.clear
 			array.each { |e| process e }
-			(STACK.length == 1) ? STACK[0] : STACK
+			(DATA_STACK.length == 1) ? DATA_STACK[0] : DATA_STACK
 		end
 
 		# Processes an item (without clearning the stack).
 		def self.process(item)
 			case
 			when !item.is_a?(Symbol) && !item.is_a?(Concatenative::RubyMessage) then
-				_push item
+				push item
 			when item.is_a?(Symbol) && item.definition then
 				item.definition.each {|e| process e}
 			else
@@ -64,14 +77,14 @@ module Concatenative
 			if (item.to_s.upcase == item.to_s) && !ARITIES[item] then
 				respond_to?(name) ?	send(name) : raise(RuntimeError, "Unknown function: #{item}")
 			else
-				_push send_message(item)
+				push send_message(item)
 			end
 		end
 
 		# Calls a Ruby method, consuming elements from the stack according to its
 		# explicit or implicit arity.
 		def self.send_message(message)
-			raise EmptyStackError, "Empty stack" if STACK.empty?
+			raise EmptyStackError, "Empty stack" if DATA_STACK.empty?
 			case
 			when message.is_a?(Concatenative::RubyMessage) then
 				n = message.arity

@@ -53,6 +53,48 @@ describe Concatenative::Combinators do
 	it "should expose DIP" do
 		[2, 3, 4, [:+], :DIP].execute.should == [5, 4]
 	end
+	
+	it "should expose 2DIP" do
+		[2, 3, 9, 4, [:+], :'2DIP'].execute.should == [5, 9, 4]
+	end
+	
+	it "should expose 3DIP" do
+		[2, 3, 10, 8, 4, [:+], :'3DIP'].execute.should == [5, 10, 8, 4]
+	end
+
+	it "should expose SWONS" do
+		[[2], 1, :SWAP, :CONS].execute.should == [1,2]
+		[[2],1, :SWONS].execute.should == [[2],1, :SWAP, :CONS].execute
+		[[2],1, :SWONS].execute.should ==  [1,2]
+	end
+
+	it "should expose POPD" do
+		[1,2,3, :POPD].execute.should == [1,3]
+	end
+
+	it "should expose DUPD" do
+		[1,2,3, :DUPD].execute.should == [1,2,2,3]
+	end
+
+	it "should expose SWAPD" do
+		[1,2,3, :SWAPD].execute.should == [2,1,3]
+	end
+
+	it "should expose SIP" do
+		[[1,2],[3,4],:SIP].execute.should == [[1,2],3,4,[1,2]]
+	end
+
+	it "should expose REP" do
+		[[2,3, :*], :REP, 2].execute.should == [6,6,2]
+	end
+	
+	it "should expose ROLLUP, ROLLDOWN and ROTATE" do
+		a = [3,2,1]
+		(a.dup << :ROLLUP).execute.should == [1,3,2]
+		(a.dup << :ROLLDOWN).execute.should == [2,1,3]
+		(a.dup << :ROTATE).execute.should == [1,2,3]
+	end
+
 
 	it "should expose UNIT" do
 		[2, 3, :UNIT].execute.should == [2, [3]]
