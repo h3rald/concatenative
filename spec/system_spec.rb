@@ -8,18 +8,18 @@ describe Concatenative::System do
 
 	it "should process Ruby methods and handle method arities" do
 		# Fixnum#>: arity = 1
-		[2, 20, :>].execute.should == false	
-		["Test", /T/, 'F', :sub|2].execute.should == "Fest"	
-		[[1,2,3],:join].execute.should == "123"
-		[[1,2,3],'|',:join|1].execute.should == "1|2|3"
+		concatenate(2, 20, :>).should == false	
+		concatenate("Test", /T/, 'F', :sub|2).should == "Fest"	
+		concatenate([1,2,3],:join).should == "123"
+		concatenate([1,2,3],'|',:join|1).should == "1|2|3"
 	end
 
 	it "should process operators" do
-		[2, 2, :DUP].execute.should == [2, 2, 2]
+		concatenate(2, 2, :DUP).should == [2, 2, 2]
 	end
 
 	it "should process combinators" do
-		[2, 3, [:SWAP, :DUP], :I].execute.should == [3, 2, 2]
+		concatenate(2, 3, [:SWAP, :DUP], :I).should == [3, 2, 2]
 	end
 
 end

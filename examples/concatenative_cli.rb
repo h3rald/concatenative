@@ -21,5 +21,5 @@ loop do
 		puts e.message
 	end
 	print " STACK: "
-	pp Concatenative::STACK
+	pp Concatenative::DATA_STACK
 end

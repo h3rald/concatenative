@@ -1,3 +1,19 @@
+== Version 0.2.0
+
+* Implemented new combinators:
+	* :BINREC
+	* :SPLIT
+	* :TWODIP
+	* :THREEDIP
+* Moved combinators to kernel.rb.
+* Removed definitions.rb (all words are now defined in kernel.rb).
+* Performance improvement: stack is never copied.
+* Performance improvement: added RETAIN_STACK.
+* Added ~ operator (call, unquote) for Symbols and Arrays. Removed Array#unquote and Symbol#unquote
+* Added Symbol#<= to define words and Symbol#/ to concatenate them.
+* Removed Symbol#define (use Symbol#<= instead)
+* Added System#move, System#copy and System#restore to work with RETAIN_STACK.
+
 == Version 0.1.0
 
 First preview release of Concatenative, implementing all the most basic operators and

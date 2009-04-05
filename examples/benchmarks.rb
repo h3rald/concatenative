@@ -4,7 +4,7 @@ require 'benchmark'
 dir = File.dirname(File.expand_path(__FILE__))+'/../lib/' 
 require dir+"concatenative"
 
-n = 3_000
+n = 1000
 
 def factorial(n)
 	(n == 0) ? 1 : factorial(n-1)

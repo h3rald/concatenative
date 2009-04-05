@@ -9,8 +9,6 @@ module Concatenative
 	# the stack and the implementations of all concatenative combinators and operators. 
 	module System
 
-		extend Combinators
-
 		class << self
 			attr_accessor :frozen, :popped, :pushed
 		end
@@ -26,8 +24,14 @@ module Concatenative
 			element
 		end
 
-		def self.save
+		def self.move
 			item = DATA_STACK.pop
+			RETAIN_STACK.push item
+		 	item	
+		end
+
+		def self.copy
+			item = DATA_STACK.last
 			RETAIN_STACK.push item
 		 	item	
 		end
@@ -49,7 +53,7 @@ module Concatenative
 		def self.restore_stack
 			diff = DATA_STACK.length - @frozen
 			@frozen = nil
-			diff.times { _pop }
+			diff.times { :POP.call}
 		end	
 
 		# Executes an array as a concatenative program (clears the stack first).
@@ -59,25 +63,14 @@ module Concatenative
 			(DATA_STACK.length == 1) ? DATA_STACK[0] : DATA_STACK
 		end
 
-		# Processes an item (without clearning the stack).
 		def self.process(item)
-			case
-			when !item.is_a?(Symbol) && !item.is_a?(Concatenative::RubyMessage) then
-				push item
-			when item.is_a?(Symbol) && item.definition then
-				item.definition.each {|e| process e}
-			else
-				call_function item
-			end
-		end
-
-		# Calls a function (defined using Symbol#define) or a Ruby method identified by item (a Symbol or RubyMessage).
-		def self.call_function(item)
-			name = "_#{item.to_s.downcase}".to_sym
-			if (item.to_s.upcase == item.to_s) && !ARITIES[item] then
-				respond_to?(name) ?	send(name) : raise(RuntimeError, "Unknown function: #{item}")
-			else
+			case	
+			when item.is_a?(Symbol) then
+				~item 
+			when item.is_a?(RubyMessage) then
 				push send_message(item)
+			else
+				push item 
 			end
 		end
 
@@ -94,7 +87,7 @@ module Concatenative
 				method = message
 			end
 			elements = []
-			(n+1).times { elements << _pop }
+			(n+1).times { elements << ~:POP }
 			receiver = elements.pop
 			args = []
 			(elements.length).times { args << elements.pop }

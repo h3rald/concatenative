@@ -6,12 +6,8 @@ require dir+"concatenative"
 
 describe Array do
 	
-	it "should be executable" do
-		[2, 3, :+].execute.should == 5
-	end
-
-	it "should be unquotable" do
-		[2, 3, :*].unquote
+	it "should be callable" do
+		concatenate(2, 3, :*)
 		Concatenative::DATA_STACK.last.should == 6
 	end
 
@@ -38,15 +34,26 @@ end
 describe Symbol do
 	
 	it "should allow definitions" do
-		lambda {:SQUARE.define [:DUP, :*]}.should_not raise_error
+		lambda {:SQUARE <= [:DUP, :*]}.should_not raise_error
+		lambda {:CUBE <= [:DUP, :DUP, :*, :*]}.should_not raise_error
+		:SQUARE.definition.should == [:DUP, :*]
+		:CUBE.definition.should == [:DUP, :DUP, :*, :*]
 	end
 
-	it "should be executable" do
-		:SQUARE.define [:DUP, :*]
-		[3, :SQUARE, 2, :+].execute.should == 11 
+	it "should be callable" do
+		~[1,2,3]
+		~:+
+		~:+
+		(~:POP).should == 6
 	end
 
-	it "should allo arity to be specified" do
+	it "should allow symbol concatenations" do
+		(:local/:test).should == "local/test".to_sym
+		:local/:test <= [1,2,3]
+		concatenate(:local/:test, :+, :+).should == 6
+	end
+
+	it "should allow arities to be specified" do
 		msg = :gsub|2
 		msg.is_a?(Concatenative::RubyMessage).should == true
 		msg.arity.should == 2
