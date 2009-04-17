@@ -75,8 +75,8 @@ module Concatenative
 
 	# Calls a function (defined using Symbol#define) or a Ruby method identified by item (a Symbol or RubyMessage).
 	def self.call_function(item)
-		if (item.to_s.upcase == item.to_s) && !ARITIES[item] then
-			respond_to?(item.to_s.downcase.to_sym) ?	send(item.to_s.downcase.to_sym) : raise(RuntimeError, "Unknown function: #{item}")
+		unless ARITIES[item] then
+			respond_to?(item) ?	send(item) : raise(RuntimeError, "Unknown function: #{item}")
 		else
 			push send_message(item)
 		end

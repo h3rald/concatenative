@@ -15,11 +15,11 @@ describe Concatenative do
 	end
 
 	it "should process operators" do
-		[2, 2, :DUP].execute.should == [2, 2, 2]
+		[2, 2, :dup].execute.should == [2, 2, 2]
 	end
 
 	it "should process combinators" do
-		[2, 3, [:SWAP, :DUP], :I].execute.should == [3, 2, 2]
+		[2, 3, [:swap, :dup], :i].execute.should == [3, 2, 2]
 	end
 
 end

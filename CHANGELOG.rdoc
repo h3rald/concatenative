@@ -1,3 +1,17 @@
+== Version 0.2.0
+
+* Implemented new combinators:
+	* :binrec
+	* :split
+	* :twodip
+	* :threedip
+* Moved combinators to kernel.rb.
+* Removed definitions.rb (all words are now defined in kernel.rb).
+* Performance improvement: stack is never copied.
+* Added ~ operator (call, unquote) for Symbols and Arrays. Removed Array#unquote and Symbol#unquote
+* Added Symbol#<= to define words and Symbol#/ to concatenate them.
+* Removed Symbol#define (use Symbol#<= instead)
+
 == Version 0.1.0
 
 First preview release of Concatenative, implementing all the most basic operators and
