@@ -5,14 +5,14 @@ module Concatenative
 	module Combinators
 
 		# Clears the stack.
-		def _clear
+		def clear
 			STACK.clear
 		end
 
 		# Pops an item out of the stack.
 		#
 		# <tt>A =></tt>
-		def _pop
+		def pop
 			raise EmptyStackError, "Empty stack" if STACK.empty?
 			return STACK.pop unless @frozen
 			if @pushed > 0 then
@@ -26,19 +26,19 @@ module Concatenative
 		end
 
 		# Prints the top stack item.
-		def _put
+		def put
 			puts STACK.last 
 		end
 
 		# Pushes a user-entered string on the stack. 
-		def _get
+		def get
 			push gets
 		end
 
 		# Duplicates the top stack item.
 		#
 		# <tt>A => A A</tt>
-		def _dup
+		def dup
 			raise EmptyStackError, "Empty stack" if STACK.empty?
 			push STACK.last
 		end
@@ -46,10 +46,10 @@ module Concatenative
 		# Swaps the first two elements on the stack.
 		#
 		# <tt>A B => B A</tt> 
-		def _swap
+		def swap
 			
-			a = _pop
-			b = _pop
+			a = pop
+			b = pop
 			push a
 			push b
 		end
@@ -57,40 +57,40 @@ module Concatenative
 		# Prepends an element to an Array.  
 		#
 		# <tt>[A] B => [A B]</tt>
-		def _cons
-			array = _pop
-			element = _pop
+		def cons
+			array = pop
+			element = pop
 			raise ArgumentError, "CONS: first element is not an Array." unless array.is_a? Array
 			push array.insert(0, element)
 		end
 
-		def _swons
-			_swap
-			_cons
+		def swons
+			swap
+			cons
 		end
 
 		# Removes the first element of an array and puts it on the stack, along with the
 		# new array
 		#
 		# <tt>[A] => B [C]</tt> 
-		def _uncons
-			array = _pop
+		def uncons
+			array = pop
 			raise ArgumentError, "UNCONS: first element is not an Array." unless array.is_a? Array
 			push array.first
 			push array.drop 1
 		end
 
-		def _unswons
-			_uncons
-			_swap
+		def unswons
+			uncons
+			swap
 		end
 
 		# Concatenates two arrays.
 		#
 		# <tt>[A] [B] => [A B]</tt>
-		def _cat
-			array1 = _pop
-			array2 = _pop
+		def cat
+			array1 = pop
+			array2 = pop
 			raise ArgumentError, "CAT: first element is not an Array." unless array1.is_a? Array
 			raise ArgumentError, "CAT: first element is not an Array." unless array2.is_a? Array
 			push array2.concat(array1)
@@ -99,8 +99,8 @@ module Concatenative
 		# Returns the first element of an array.
 		#
 		# <tt>[A B] => A</tt>
-		def _first
-			array = _pop
+		def first
+			array = pop
 			raise ArgumentError, "FIRST: first element is not an Array." unless array.is_a? Array
 			raise ArgumentError, "FIRST: empty array." if array.length == 0
 			push array.first
@@ -109,25 +109,25 @@ module Concatenative
 		# Returns everything but the first element of an array.
 		#
 		# <tt>[A B C] => [B C]</tt>
-		def _rest
-			array = _pop
+		def rest
+			array = pop
 			raise ArgumentError, "REST: first element is not an Array." unless array.is_a? Array
 			raise ArgumentError, "REST: empty array." if array.length == 0
 			array.delete_at 0
 			push array
 		end
 
-		alias _drop _pop
-		alias _zap _pop
-		alias _concat _cat
+		alias drop pop
+		alias zap pop
+		alias concat cat
 
 		# Saves A, executes P, restores A.
 		#
 		# <tt>A [P] => A</tt>
-		def _dip
-			program = _pop
+		def dip
+			program = pop
 			raise ArgumentError, "DIP: first element is not an Array." unless program.is_a? Array
-			item = _pop
+			item = pop
 			program.unquote
 			push item
 		end
@@ -135,11 +135,11 @@ module Concatenative
 		# Saves A and B, executes P, restores A and B.
 		#
 		# <tt>A B [P] => A B</tt>
-		def _2dip
-			program = _pop
+		def twodip
+			program = pop
 			raise ArgumentError, "2DIP: first element is not an Array." unless program.is_a? Array
 			items = []
-			2.times { items << _pop }
+			2.times { items << pop }
 			program.unquote
 			items.reverse.each {|i| push i }
 		end
@@ -147,11 +147,11 @@ module Concatenative
 		# Saves A, B and C, executes P, restores A, B and C.
 		#
 		# <tt>A B C [P] => A B C</tt>
-		def _3dip
-			program = _pop
+		def threedip
+			program = pop
 			raise ArgumentError, "2DIP: first element is not an Array." unless program.is_a? Array
 			items = []
-			3.times { items << _pop }
+			3.times { items << pop }
 			program.unquote
 			items.reverse.each {|i| push i }
 		end
@@ -159,57 +159,57 @@ module Concatenative
 		# Removes the second item on the stack.
 		#
 		# <tt>A B => B</tt>
-		def _popd
+		def popd
 			push [:POP]
-			_dip
+			dip
 		end
 
 		# Duplicates the second item on the stack
 		#
 		# <tt>A B => A A B</tt>
-		def _dupd
+		def dupd
 			push [:DUP]
-			_dip
+			dip
 		end
 
 		# Swaps the second and third items on the stack
 		#
 		# <tt>A B C => B A C</tt>
-		def _swapd
+		def swapd
 			push [:SWAP]
-			_dip
+			dip
 		end
 
 		# 
 		# <tt>A B C => B C A</tt>
-		def _rollup
-			_swap
+		def rollup
+			swap
 			push [:SWAP]
-			_dip
+			dip
 		end
 
 		# 
 		# <tt>A B C => C A B</tt>
-		def _rolldown
+		def rolldown
 			push [:SWAP]
-			_dip
-			_swap
+			dip
+			swap
 		end
 
 		#
 		# <tt>A B C => C B A</tt>
-		def _rotate
-			_swap
+		def rotate
+			swap
 			push [:SWAP]
-			_dip
-			_swap
+			dip
+			swap
 		end
 
 		# Executes a quoted program.
 		#
 		# <tt>[P] => </tt>
-		def _i
-			program = _pop
+		def i
+			program = pop
 			raise ArgumentError, "I: first element is not an Array." unless program.is_a? Array
 			program.unquote
 		end
@@ -217,16 +217,16 @@ module Concatenative
 		# Executes THEN if IF is true, otherwise executes ELSE.
 		#
 		# <tt>[IF] [THEN] [ELSE] =></tt> 
-		def _ifte
-			_else = _pop
-			_then = _pop
-			_if = _pop
+		def ifte
+			_else = pop
+			_then = pop
+			_if = pop
 			raise ArgumentError, "IFTE: first element is not an Array." unless _if.is_a? Array
 			raise ArgumentError, "IFTE: second element is not an Array." unless _then.is_a? Array
 			raise ArgumentError, "IFTE: third element is not an Array." unless _else.is_a? Array
 			save_stack
 			_if.unquote
-			condition = _pop
+			condition = pop
 			restore_stack
 			if condition then
 				_then.unquote
@@ -235,36 +235,38 @@ module Concatenative
 			end
 		end
 
+		alias if ifte
+
 		# Quotes the top stack element.
 		#
 		# <tt>A => [A]</tt>
-		def _unit
-			push [_pop]
+		def unit
+			push [pop]
 		end
 
 		# Executes P for each element of A, pushes an array containing the results on the stack.
 		# 
 		# <tt>[A] [P] => [B]</tt>
-		def _map
-			program = _pop
-			list = _pop
+		def map
+			program = pop
+			list = pop
 			raise ArgumentError, "MAP: first element is not an Array." unless program.is_a? Array
 			raise ArgumentError, "MAP: second element is not an array." unless list.is_a? Array
 			push []
 			list.map do |e| 
 				push e
 				program.unquote
-				_unit
-				_cat
+				unit
+				cat
 			end
 		end
 
 		# Executes P for each element of A, pushes the results on the stack.
 		# 
 		# <tt>[A] [P] => B</tt>
-		def _step
-			program = _pop
-			list = _pop
+		def step
+			program = pop
+			list = pop
 			raise ArgumentError, "STEP: first element is not an Array." unless program.is_a? Array
 			raise ArgumentError, "STEP: second element is not an array." unless list.is_a? Array
 			list.map do |e| 
@@ -276,25 +278,25 @@ module Concatenative
 		# If IF is true, executes THEN. Otherwise, executes REC1, recurses and then executes REC2.
 		#
 		# <tt>[IF] [THEN] [REC1] [REC2] =></tt>
-		def _linrec
-			rec2 = _pop
-			rec1 = _pop
-			_then = _pop
-			_if = _pop
+		def linrec
+			rec2 = pop
+			rec1 = pop
+			_then = pop
+			_if = pop
 			raise ArgumentError, "LINREC: first element is not an Array." unless _if.is_a? Array
 			raise ArgumentError, "LINREC: second element is not an Array." unless _then.is_a? Array
 			raise ArgumentError, "LINREC: third element is not an Array." unless rec1.is_a? Array
 			raise ArgumentError, "LINREC: fourth element is not an Array." unless rec2.is_a? Array
 			save_stack
 			_if.unquote
-			condition = _pop
+			condition = pop
 			restore_stack
 			if condition then
 				_then.unquote
 			else
 				rec1.unquote
 				[_if, _then, rec1, rec2].each {|e| push e }
-				_linrec
+				linrec
 				rec2.unquote
 			end
 		end
@@ -305,10 +307,10 @@ module Concatenative
 		#	* IF = a condition to verify if A is its zero value (0, [], "") or not.
 		#
 		# <tt>A [THEN] [REC2] =><tt> 
-		def _primrec
-			rec2 = _pop
-			_then = [:POP, _pop, :I]
-			arg = _pop
+		def primrec
+			rec2 = pop
+			_then = [:POP, pop, :I]
+			arg = pop
 			# Guessing IF
 			case 
 			when arg.respond_to?(:blank?) then
@@ -332,15 +334,15 @@ module Concatenative
 				raise ArgumentError, "PRIMREC: Unable to create REC1 element for #{arg} (#{arg.class})"
 			end
 			[arg, _if, _then, rec1, rec2].each {|e| push e }
-			_linrec
+			linrec
 		end
 
 		# Executes P N times.
 		#
 		# <tt>N [P] => </tt>
-		def _times
-			program = _pop
-			n = _pop
+		def times
+			program = pop
+			n = pop
 			raise ArgumentError, "TIMEs: second element is not an Array." unless program.is_a? Array
 			n.times { program.clone.unquote }
 		end
@@ -348,28 +350,28 @@ module Concatenative
 		# While COND is true, executes P
 		#
 		# <tt>[P] [COND] => </tt>
-		def _while
-			program = _pop
-			cond = _pop
+		def while
+			program = pop
+			cond = pop
 			raise ArgumentError, "WHILE: first element is not an Array." unless cond.is_a? Array
 			raise ArgumentError, "WHILE: second element is not an Array." unless program.is_a? Array
 			save_stack
 			cond.unquote
-			res = _pop
+			res = pop
 			restore_stack
 			if res then 
 				program.unquote
 				[cond, program].each {|e| push e }
-				_while
+				self.while
 			end
 		end
 
 		# Splits an Array into two parts, depending on which element satisfy a condition
 		#
 		# <tt>[A] [P] => [B] [C]</tt>
-		def _split
-			cond = _pop
-			array = _pop
+		def split
+			cond = pop
+			array = pop
 			raise ArgumentError, "SPLIT: first element is not an Array." unless cond.is_a? Array
 			raise ArgumentError, "SPLIT: second element is not an Array." unless array.is_a? Array
 			yes, no = [], []
@@ -377,7 +379,7 @@ module Concatenative
 				save_stack
 				push e
 				cond.dup.unquote
-				_pop ? yes << e : no << e
+				pop ? yes << e : no << e
 				restore_stack
 			end
 			push yes
@@ -388,29 +390,29 @@ module Concatenative
 		# recurses twice and then executes REC2.
 		#
 		# <tt>[IF] [THEN] [REC1] [REC2] =></tt>
-		def _binrec
-			rec2 = _pop
-			rec1 = _pop
-			_then = _pop
-			_if = _pop
+		def binrec
+			rec2 = pop
+			rec1 = pop
+			_then = pop
+			_if = pop
 			raise ArgumentError, "BINREC: first element is not an Array." unless _if.is_a? Array
 			raise ArgumentError, "BINREC: second element is not an Array." unless _then.is_a? Array
 			raise ArgumentError, "BINREC: third element is not an Array." unless rec1.is_a? Array
 			raise ArgumentError, "BINREC: fourth element is not an Array." unless rec2.is_a? Array
 			save_stack
 			_if.unquote
-			condition = _pop
+			condition = pop
 			restore_stack
 			if condition then
 				_then.unquote
 			else
 				rec1.unquote
-				a = _pop
-				b = _pop
+				a = pop
+				b = pop
 				[b, _if, _then, rec1, rec2].each {|e| push e }
-				_binrec
+				binrec
 				[a, _if, _then, rec1, rec2].each {|e| push e }
-				_binrec
+				binrec
 				rec2.unquote
 			end
 		end

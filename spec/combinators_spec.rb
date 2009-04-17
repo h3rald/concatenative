@@ -54,12 +54,12 @@ describe Concatenative::Combinators do
 		[2, 3, 4, [:+], :DIP].execute.should == [5, 4]
 	end
 	
-	it "should expose 2DIP" do
-		[2, 3, 9, 4, [:+], :'2DIP'].execute.should == [5, 9, 4]
+	it "should expose TWODIP" do
+		[2, 3, 9, 4, [:+], :TWODIP].execute.should == [5, 9, 4]
 	end
 	
-	it "should expose 3DIP" do
-		[2, 3, 10, 8, 4, [:+], :'3DIP'].execute.should == [5, 10, 8, 4]
+	it "should expose THREEDIP" do
+		[2, 3, 10, 8, 4, [:+], :THREEDIP].execute.should == [5, 10, 8, 4]
 	end
 
 	it "should expose SWONS" do

@@ -60,9 +60,8 @@ module Concatenative
 
 		# Calls a function (defined using Symbol#define) or a Ruby method identified by item (a Symbol or RubyMessage).
 		def self.call_function(item)
-			name = "_#{item.to_s.downcase}".to_sym
 			if (item.to_s.upcase == item.to_s) && !ARITIES[item] then
-				respond_to?(name) ?	send(name) : raise(RuntimeError, "Unknown function: #{item}")
+				respond_to?(item.to_s.downcase.to_sym) ?	send(item.to_s.downcase.to_sym) : raise(RuntimeError, "Unknown function: #{item}")
 			else
 				push send_message(item)
 			end
@@ -81,7 +80,7 @@ module Concatenative
 				method = message
 			end
 			elements = []
-			(n+1).times { elements << _pop }
+			(n+1).times { elements << pop }
 			receiver = elements.pop
 			args = []
 			(elements.length).times { args << elements.pop }
