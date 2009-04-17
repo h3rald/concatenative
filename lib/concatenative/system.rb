@@ -2,10 +2,9 @@
 
 module Concatenative
 
-	DATA_STACK = []
-	RETAIN_STACK = []
+	STACK = []
 
-	# The System module includes the DATA_STACK constant, methods to interpret items pushed on 
+	# The System module includes the STACK constant, methods to interpret items pushed on 
 	# the stack and the implementations of all concatenative combinators and operators. 
 	module System
 
@@ -21,42 +20,30 @@ module Concatenative
 
 		# Pushes an item on the stack.
 		def self.push(element)
-			DATA_STACK.push element
+			STACK.push element
 			@pushed += 1 if @frozen
 			element
 		end
 
-		def self.save
-			item = DATA_STACK.pop
-			RETAIN_STACK.push item
-		 	item	
-		end
-
-		def self.restore
-			item = RETAIN_STACK.pop
-			DATA_STACK.push item
-			item
-		end
-
 		# Saves the stack state
 		def self.save_stack
-			@frozen = DATA_STACK.length
+			@frozen = STACK.length
 			@popped = 0
 			@pushed = 0
 		end
 
 		# Restored the previously saved stack state
 		def self.restore_stack
-			diff = DATA_STACK.length - @frozen
+			diff = STACK.length - @frozen
 			@frozen = nil
 			diff.times { _pop }
 		end	
 
 		# Executes an array as a concatenative program (clears the stack first).
 		def self.execute(array)
-			DATA_STACK.clear
+			STACK.clear
 			array.each { |e| process e }
-			(DATA_STACK.length == 1) ? DATA_STACK[0] : DATA_STACK
+			(STACK.length == 1) ? STACK[0] : STACK
 		end
 
 		# Processes an item (without clearning the stack).
@@ -84,7 +71,7 @@ module Concatenative
 		# Calls a Ruby method, consuming elements from the stack according to its
 		# explicit or implicit arity.
 		def self.send_message(message)
-			raise EmptyStackError, "Empty stack" if DATA_STACK.empty?
+			raise EmptyStackError, "Empty stack" if STACK.empty?
 			case
 			when message.is_a?(Concatenative::RubyMessage) then
 				n = message.arity

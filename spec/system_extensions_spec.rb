@@ -12,7 +12,7 @@ describe Array do
 
 	it "should be unquotable" do
 		[2, 3, :*].unquote
-		Concatenative::DATA_STACK.last.should == 6
+		Concatenative::STACK.last.should == 6
 	end
 
 end

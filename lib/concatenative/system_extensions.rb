@@ -2,7 +2,7 @@
 
 module Kernel
 
-	# Execute an array as a concatenative program (clears the DATA_STACK first).
+	# Execute an array as a concatenative program (clears the STACK first).
 	def concatenate(*program)
 		Concatenative::System.execute program
 	end
@@ -18,7 +18,7 @@ end
 # The Array class is extended to allow execution of concatenative programs.
 class Array
 
-	# Executes a concatenative program (clears the DATA_STACK first).
+	# Executes a concatenative program (clears the STACK first).
 	def execute
 		Concatenative.concatenate *self
 	end

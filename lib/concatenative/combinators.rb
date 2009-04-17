@@ -6,28 +6,28 @@ module Concatenative
 
 		# Clears the stack.
 		def _clear
-			DATA_STACK.clear
+			STACK.clear
 		end
 
 		# Pops an item out of the stack.
 		#
 		# <tt>A =></tt>
 		def _pop
-			raise EmptyStackError, "Empty stack" if DATA_STACK.empty?
-			return DATA_STACK.pop unless @frozen
+			raise EmptyStackError, "Empty stack" if STACK.empty?
+			return STACK.pop unless @frozen
 			if @pushed > 0 then
 				@pushed -= 1
-				DATA_STACK.pop
+				STACK.pop
 			else
 				raise EmptyStackError, "Empty stack" if @frozen <= 0
 				@popped += 1
-				DATA_STACK[@frozen-@popped]
+				STACK[@frozen-@popped]
 			end	
 		end
 
 		# Prints the top stack item.
 		def _put
-			puts DATA_STACK.last 
+			puts STACK.last 
 		end
 
 		# Pushes a user-entered string on the stack. 
@@ -39,8 +39,8 @@ module Concatenative
 		#
 		# <tt>A => A A</tt>
 		def _dup
-			raise EmptyStackError, "Empty stack" if DATA_STACK.empty?
-			push DATA_STACK.last
+			raise EmptyStackError, "Empty stack" if STACK.empty?
+			push STACK.last
 		end
 
 		# Swaps the first two elements on the stack.
@@ -127,9 +127,9 @@ module Concatenative
 		def _dip
 			program = _pop
 			raise ArgumentError, "DIP: first element is not an Array." unless program.is_a? Array
-			save
+			item = _pop
 			program.unquote
-			restore
+			push item
 		end
 
 		# Saves A and B, executes P, restores A and B.
@@ -138,11 +138,10 @@ module Concatenative
 		def _2dip
 			program = _pop
 			raise ArgumentError, "2DIP: first element is not an Array." unless program.is_a? Array
-			save
-			save
+			items = []
+			2.times { items << _pop }
 			program.unquote
-			restore
-			restore
+			items.reverse.each {|i| push i }
 		end
 
 		# Saves A, B and C, executes P, restores A, B and C.
@@ -151,13 +150,10 @@ module Concatenative
 		def _3dip
 			program = _pop
 			raise ArgumentError, "2DIP: first element is not an Array." unless program.is_a? Array
-			save
-			save
-			save
+			items = []
+			3.times { items << _pop }
 			program.unquote
-			restore
-			restore
-			restore
+			items.reverse.each {|i| push i }
 		end
 		
 		# Removes the second item on the stack.
