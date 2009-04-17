@@ -4,7 +4,7 @@ dir = File.dirname(File.expand_path(__FILE__))+'/../lib/'
 
 require dir+"concatenative"
 
-describe Concatenative::System do
+describe Concatenative do
 
 	it "should process Ruby methods and handle method arities" do
 		# Fixnum#>: arity = 1

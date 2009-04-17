@@ -4,7 +4,7 @@ module Kernel
 
 	# Execute an array as a concatenative program (clears the STACK first).
 	def concatenate(*program)
-		Concatenative::System.execute program
+		Concatenative.execute program
 	end
 
 	# Specify the arity of a ruby method (regardless of the receiver).
@@ -25,7 +25,7 @@ class Array
 
 	# Processes each element of the array as a concatenative expression.
 	def unquote
-		each { |e| Concatenative::System.process e }
+		each { |e| Concatenative.process e }
 	end
 end
 

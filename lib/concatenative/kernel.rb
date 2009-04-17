@@ -2,7 +2,7 @@
 
 module Concatenative
 
-	module Combinators
+	module Kernel
 
 		# Clears the stack.
 		def clear

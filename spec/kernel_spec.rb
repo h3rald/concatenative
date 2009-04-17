@@ -4,7 +4,7 @@ dir = File.dirname(File.expand_path(__FILE__))+'/../lib/'
 
 require dir+"concatenative"
 
-describe Concatenative::Combinators do
+describe Concatenative::Kernel do
 
 	it "should expose CLEAR" do
 		[1,2,3,4,5, :CLEAR].execute.should == [] 
