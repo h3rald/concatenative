@@ -22,8 +22,8 @@ end
 
 spec = Gem::Specification.new do |s|
   s.name = %q{concatenative}
-  s.version = "0.1.0"
-  s.date = %q{2009-03-29}
+  s.version = "0.2.0"
+  s.date = %q{2009-04-19}
   s.summary = %q{A Ruby DSL for concatenative programming.}
   s.email = %q{h3rald@h3rald.com}
   s.homepage = %q{http://rubyforge.org/projects/concatenative}
@@ -32,7 +32,7 @@ spec = Gem::Specification.new do |s|
   s.has_rdoc = true
   s.authors = ["Fabio Cevasco"]
   s.files = FileList["{lib}/**/*"].to_a+FileList["{examples}/*"].to_a+FileList["{spec}/*"].to_a+["README.rdoc", "LICENSE", "CHANGELOG.rdoc"]
-  s.rdoc_options = ["--main", "README.rdoc", "--exclude", "spec"]
+  s.rdoc_options = ["--main", "README.rdoc", "--exclude", "spec", "--line-numbers"]
   s.extra_rdoc_files = ["README.rdoc", "LICENSE", "CHANGELOG.rdoc"]
 	s.test_file  = 'spec/concatenative_spec.rb'  
 end

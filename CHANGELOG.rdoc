@@ -11,6 +11,7 @@
 * Performance improvement: no symbol/string conversion when processing words.
 * Added ~ operator (call, unquote) for Symbols and Arrays. Removed Array#unquote and Symbol#unquote
 * Added Symbol#<= to define words and Symbol#/ to concatenate them.
+* Added Symbol#/ to concatenate symbols and simulate namespaces.
 * Removed Symbol#define (use Symbol#<= instead)
 
 == Version 0.1.0

@@ -22,16 +22,16 @@ Execute a Concatenative program:
 		10, 
 		[0, :==], 
 		[1, :+], 
-		[:DUP, 1, :-], 
+		[:dup, 1, :-], 
 		[:*], 
-		:LINREC
+		:linrec
 	)
 
-The program above returns the factorial of 10, computed using the linrec combinator. It is also possible to execute arrays directly and define concatenative programs as symbols (tey must be all uppercase).
+The program above returns the factorial of 10, computed using the linrec combinator. It is also possible to execute arrays directly and define concatenative programs as symbols, as folows:
 
 
-		:FACTORIAL.define [0, :==], [:POP, 1], [:DUP, 1, :- , :FACTORIAL, :*], :IFTE
-		[5, :FACTORIAL].execute
+		:factorial <= [0, :==], [:pop, 1], [:dup, 1, :- , :factorial, :*], :if
+		[5, :factorial].execute
 
 The program above calculates the factorial of 5, using explicit recursion. 
 

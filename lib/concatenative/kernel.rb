@@ -300,8 +300,7 @@ module Concatenative
 			end
 		end
 
-		#	Same as _linrec, but it is only necessary to specify THEN and REC2.
-		#
+		#	Same as linrec, but it is only necessary to specify THEN and REC2.
 		#	* REC1 = a program to reduce A to its zero value (0, [], "").
 		#	* IF = a condition to verify if A is its zero value (0, [], "") or not.
 		#
