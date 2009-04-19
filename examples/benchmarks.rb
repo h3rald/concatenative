@@ -22,9 +22,9 @@ puts "=====> Factorial of #{n}"
 puts "======================================================================"
 Benchmark.bmbm(20) do |x|
   x.report("Standard Ruby Code:") { factorial n }
-	x.report("Concatenative (times):") { concatenate(n, 1, 1, :ROLLDOWN, [:DUP, [:*], :DIP, :succ], :TIMES, :POP) }
-  x.report("Concatenative (linrec):") { concatenate(n, [0, :==], [1, :+], [:DUP, 1, :-], [:*], :LINREC) }
-  x.report("Concatenative (primrec):") { concatenate(n, [1], [:*], :PRIMREC) }
+	x.report("Concatenative (times):") { concatenate(n, 1, 1, :rolldown, [:dup, [:*], :dip, :succ], :times, :pop) }
+  x.report("Concatenative (linrec):") { concatenate(n, [0, :==], [1, :+], [:dup, 1, :-], [:*], :linrec) }
+  x.report("Concatenative (primrec):") { concatenate(n, [1], [:*], :primrec) }
 end
 puts
 puts
@@ -33,6 +33,6 @@ puts "=====> Fibonacci number for #{n}"
 puts "======================================================================"
 Benchmark.bmbm(20) do |x|
   x.report("Standard Ruby Code:") { fibonacci n }
-	x.report("Concatenative (times):") { concatenate(n, 0, 1, :ROLLDOWN, [:DUP, [:+], :DIP, :SWAP], :TIMES, :POP) }
+	x.report("Concatenative (times):") { concatenate(n, 0, 1, :rolldown, [:dup, [:+], :dip, :swap], :times, :pop) }
 end
 

@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 require 'pp'
 
 libdir = File.dirname(File.expand_path(__FILE__))+'/concatenative/'
@@ -15,8 +17,8 @@ module Concatenative
 	ARITIES = {}
 	DEBUG = false
 
-	# RubyMessage objects wrap a symbol and its arity 
-	# (returned by Symbol#|). 
+	# RubyMessage objects wrap a symbol and its arity
+	# (returned by Symbol#|).
 	class RubyMessage
 		attr_reader :name, :arity
 		def initialize(name, arity)
@@ -64,36 +66,33 @@ module Concatenative
 	# Processes an item (without clearning the stack).
 	def self.process(item)
 		case
-		when !item.is_a?(Symbol) && !item.is_a?(Concatenative::RubyMessage) then
+		when item.is_a?(Symbol) then
+			if item.defined?
+				~item.definition
+			else
+				case item.namespace
+				when :kernel then
+					Concatenative.send(item.name) rescue raise(RuntimeError, "Kernel word '#{item.name}' is not defined.") 
+				when :ruby then
+					push ruby_method(item.name)
+				else
+					return Concatenative.send(item.name) if Concatenative::Kernel.method_defined? item.name
+					push ruby_method(item.name)
+				end
+			end
+		when item.is_a?(RubyMessage) then
+			push ruby_method(item.name, item.arity)
+		else
 			push item
-		when item.is_a?(Symbol) && item.definition then
-			item.definition.each {|e| process e}
-		else
-			call_function item
-		end
-	end
-
-	# Calls a function (defined using Symbol#define) or a Ruby method identified by item (a Symbol or RubyMessage).
-	def self.call_function(item)
-		unless ARITIES[item] then
-			respond_to?(item) ?	send(item) : raise(RuntimeError, "Unknown function: #{item}")
-		else
-			push send_message(item)
 		end
 	end
 
 	# Calls a Ruby method, consuming elements from the stack according to its
 	# explicit or implicit arity.
-	def self.send_message(message)
+	def self.ruby_method(message, arity=nil)
 		raise EmptyStackError, "Empty stack" if STACK.empty?
-		case
-		when message.is_a?(Concatenative::RubyMessage) then
-			n = message.arity
-			method = message.name
-		when message.is_a?(Symbol) then
-			n = ARITIES[message] || 0
-			method = message
-		end
+		n = arity || ARITIES[message] || 0
+		method = message
 		elements = []
 		(n+1).times { elements << pop }
 		receiver = elements.pop

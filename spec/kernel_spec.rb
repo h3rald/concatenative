@@ -106,7 +106,7 @@ describe Concatenative::Kernel do
 	end
 
 	it "should expose STEP" do
-		[[1,2,3,4], [:dup, :*], :map, 1].execute.should == [1,4,9,16, 1]
+		[[1,2,3,4], [:dup, :*], :step, 1].execute.should == [1,4,9,16, 1]
 	end
 
 	it "should expose LINREC" do

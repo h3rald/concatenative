@@ -11,7 +11,7 @@ puts " ========================================="
 loop do
 	print " => "
 	begin
-		Concatenative::System.process(instance_eval(gets))	
+		Concatenative.process(instance_eval(gets))	
 	rescue Exception => e
 		if e.is_a? SystemExit then
 			puts " Exiting."
